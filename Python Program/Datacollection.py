@@ -36,9 +36,18 @@ import sys
 import csv
 from nltk.corpus import stopwords
 
+# =============================================================================
+# Ignores various harmless warnings that can occur when using the program
+# =============================================================================
+
 warnings.simplefilter(action='ignore', category=FutureWarning)
 warnings.simplefilter(action='ignore', category=UserWarning)
 warnings.simplefilter(action='ignore', category=Exception)
+
+# =============================================================================
+# Checks whether the brown and stopwords packages have already been downloaded 
+# befores trying to download them again
+# =============================================================================
 
 try: 
     nltk.data.find('brown')
@@ -46,6 +55,10 @@ try:
 except LookupError:
     nltk.download('brown')
     nltk.download('stopwords')
+
+# =============================================================================
+# Creates a variable for each feature data list file
+# =============================================================================
 
 df = pd.read_csv('CollectionData/dictionary.csv')
 df_anger = pd.read_csv('CollectionData/anger.csv')
@@ -59,8 +72,16 @@ df_sad = pd.read_csv('CollectionData/sadness.csv')
 df_surp = pd.read_csv('CollectionData/surprise.csv')
 df_trust = pd.read_csv('CollectionData/trust.csv')
 
-removal = [',','!','"','#','$','%','(',')','[',']','*','+','.','/',"\\",';',':','@','_','—','?','”','“','``',"''",'--',"'","`"]
+# =============================================================================
+# Sets up the variable for the removal of the undesired punctuation
+# =============================================================================
 
+removal = [',','!','"','#','$','%','(',')','[',']','*','+','.','/',"\\",';',':','@','_','—','?','”','“','``',"''",'--',"'","`"]
+           
+# =============================================================================
+# Sets up the variables for the loops           
+# =============================================================================
+           
 overloop = 1
 main_loop = 1
 loop = 1
@@ -72,6 +93,10 @@ loop6 = 0
 loop7 = 0
 loop8 = 0
 
+# =============================================================================
+# Starts the loops
+# =============================================================================
+
 while overloop == 1:
     main_loop = 1
     loop = 1
@@ -80,6 +105,11 @@ while overloop == 1:
         text2 = []
         data = []
         while loop == 1:
+            
+# =============================================================================
+# Main menu            
+# =============================================================================
+            
             print("\nWelcome to this text analysing program.")
             
             print("\nPlease choose one of the following options:")
@@ -112,6 +142,11 @@ while overloop == 1:
                 print("\n----Incorrect input. Please just enter a single number matching the option of your choice----")
                 
         while loop2 == 1:
+            
+# =============================================================================
+# Menu for first choice       
+# =============================================================================
+            
             print("\n\n-----------------------------------------------------------\n")
             print("\nPlease choose from one of these genres:")
             
@@ -135,6 +170,11 @@ while overloop == 1:
             print("0) Stop and Exit")
             
             choice2 = input("Please enter your choice: ")
+            
+# =============================================================================
+# Choice menu
+# =============================================================================
+            
             if choice2 == '1':
                 text = brown.words(categories='news')
                 loop2 = 0
@@ -220,6 +260,11 @@ while overloop == 1:
                 print("\n----Incorrect input. Please just enter a single number matching the option of your choice----")
             
         while loop2 == 2:
+            
+# =============================================================================
+# Menu for second choice
+# =============================================================================
+            
             print("\n\n-----------------------------------------------------------\n")
             print("\nPlease choose the genre from which you wish to select a text:")
             
@@ -244,6 +289,11 @@ while overloop == 1:
             
             choice2 = input("Please enter your choice: ")
             if choice2 == '1':
+                
+# =============================================================================
+# Picking a specific text for any of the genres to collect data from                 
+# =============================================================================
+                
                 loop4 = 1
                 while loop4 == 1:
                     print("\n\n-----------------------------------------------------------\n")
@@ -962,6 +1012,10 @@ while overloop == 1:
             else:
                 print("\n----Incorrect input. Please just enter a single number matching the option of your choice----")
                
+# =============================================================================
+# Menu for third choice - own text file
+# =============================================================================
+                
         while loop2 == 3:
             print("\n\n-----------------------------------------------------------\n")
             print("\nPlease enter the name and the extension of the textfile that you wish to analyse, e.g. 'filename.txt'. Please ensure that it is indeed a .txt file and that it is located in the same folder as the program's Python file, as this program will otherwise not find the file.")
@@ -970,6 +1024,11 @@ while overloop == 1:
             print("0) Stop and Exit.")
             
             textfile = input("\nEnter your filename here: ")
+            
+# =============================================================================
+# Program looks for a file with the name provided in the input
+# =============================================================================
+            
             if re.search(".txt", textfile):
                 text = open(textfile, 'r')
                 text = text.read().split()
@@ -991,35 +1050,62 @@ while overloop == 1:
                 loop = 1
             elif textfile == '0':
                 sys.exit("\nProgram is stopping. Thank you for using this program.")
+                
+# =============================================================================
+# Checks if the file exists. If it doesn't, gives warning and shows the menu again
+# =============================================================================
+                
             elif not re.search(".txt", textfile):
                 print("\n----You have not provided a filename with a .txt extension----")
+            
+# =============================================================================
+# Pre-processes the texts
+# =============================================================================
             
         while loop3 == 1:
             text = np.array(text)
             text = text.tolist()
+# =============================================================================
+#             Removes punctuation
+# =============================================================================
             for w in text:
                 if w not in removal:
                     text2 = text2 + [w]
+# =============================================================================
+#             Makes lowercase
+# =============================================================================
             text2 = [w.lower() for w in text2]
-            digitfilter = [item for item in text2 if not item.isdigit()]
-            read_text = list(digitfilter)
             loop = 0
             main_loop = 2
             loop3 = 0
     
     while main_loop == 2:
         data = np.array(read_text)
-        
+# =============================================================================
+#       Removes stopwords
+# =============================================================================
         data = [word for word in data if word not in stopwords.words('english')]
-        
+# =============================================================================
+#       Variable d allows for counting the words as its going along later on
+# =============================================================================
         d = Counter(data[np.isin(data, df.word)])
-        
+# =============================================================================
+#       Creates variables for the Dictionary features and wordcount, tokencount, 
+#       and lexical richness. Also sets up the frequency distribution variable.
+# =============================================================================
         pleasantness, activation, imagery = (0,0,0)
         count = len(data)
         tokens = len(set(data))
         richness = tokens / count
         fdist = nltk.FreqDist(data)
-        
+
+# =============================================================================
+#       Most elegant bit of code in this entire program: this counts the number
+#       of words in the text that found a match in the Dictionary list.
+#       Once a match is found, they add the 3 values to the respective variables
+#       and divide them by the number of matches for each match found, which 
+#       results in an average score.
+# =============================================================================
         for k,v in d.items():
             values = df.loc[df.word == k]
             pleasantness += values["pleasantness"].item()*v
@@ -1121,6 +1207,11 @@ while overloop == 1:
             else:
                 print("\n----Incorrect input. Please just enter a single number matching the option of your choice----")
             
+# =============================================================================
+# The loop for the fourth and final option. It goes through all texts in the
+# genres and collects the data.                
+# =============================================================================
+            
     while main_loop == 3:
         df = pd.read_csv('dictionary.csv')
 
@@ -1134,7 +1225,13 @@ while overloop == 1:
         genre = 'pres_rep'
         genreno = int('1')
         
+# =============================================================================
+#       This loop allows for an automated switch in genres when needed.
+# =============================================================================
         while loop8 == 1:
+# =============================================================================
+#           Gives each genre a number
+# =============================================================================
             textno = textno + 1
             if category == 'ca':
                 genre = 'press_rep'
@@ -1180,7 +1277,10 @@ while overloop == 1:
                 genreno = int('14')
             if category == 'cr':
                 genre = 'humor'
-                genreno = int('15')
+                genreno = int('15') 
+# =============================================================================
+#           Changes the genre number when a certain number of texts has been reached
+# =============================================================================
             if 1 <= textno <= 9:
                 file = str(category) + '0' + str(textno)
                 text = brown.words(fileids=[file])
@@ -1264,7 +1364,9 @@ while overloop == 1:
             elif 10 <= textno <= 99:
                 file = str(category) + str(textno)
                 text = brown.words(fileids=[file])
-          
+# =============================================================================
+#           Pre-processing again
+# =============================================================================
             text = np.array(text)
             text = text.tolist()
             for w in text:
@@ -1279,7 +1381,9 @@ while overloop == 1:
             count = len(data)
             tokens = len(set(data))
             richness = tokens / count
-            
+# =============================================================================
+#           Same as before, but this time for all features, not just the Dictionary ones
+# =============================================================================
             d = Counter(data[np.isin(data, df.word)])
             d_anger = Counter(data[np.isin(data, df_anger.word)])
             d_anticip = Counter(data[np.isin(data, df_anticip.word)])
@@ -1292,6 +1396,9 @@ while overloop == 1:
             d_surp = Counter(data[np.isin(data, df_surp.word)])
             d_trust = Counter(data[np.isin(data, df_trust.word)])
             
+# =============================================================================
+#           Sets up the smoothing (adding 1 to each word value)
+# =============================================================================
             word_1 = 1
             word_2 = 1
             word_af = 1
@@ -1400,6 +1507,9 @@ while overloop == 1:
             word_year = 1
             word_years = 1
             
+# =============================================================================
+#           Counts the frequency of each most frequent word
+# =============================================================================
             for word in data:
                 if word == '1':
                     word_1 = word_1 + 1
@@ -1615,7 +1725,9 @@ while overloop == 1:
                     word_year = word_year + 1
                 elif word == 'years':
                     word_years = word_years + 1
-            
+# =============================================================================
+#           Same as before; counts the pleasantness, etc. of each text
+# =============================================================================
             pleasantness, activation, imagery = (0,0,0)
             
             for k,v in d.items():
@@ -1630,6 +1742,9 @@ while overloop == 1:
             a_avg = activation / dict_count
             i_avg = imagery / dict_count
             
+# =============================================================================
+#           Turns each variable into a list so it can be put into a csv file
+# =============================================================================
             genre = [genre]
             genreno = [genreno]
             filename = [file]
@@ -1760,21 +1875,31 @@ while overloop == 1:
             word_would = [word_would]
             word_year = [word_year]
             word_years = [word_years]
-            
+# =============================================================================
+#           The row of data
+# =============================================================================
             textinfo = textinfo + [genre + genreno + filename + count + tokens + richness + p_avg + a_avg + i_avg + dict_count + anger + anticipation + disgust + fear + joy + negative + positive + sadness + surprise + trust + word_1 + word_2 + word_af + word_also + word_american + word_another + word_arlene + word_around + word_back + word_bdikkat + word_business + word_came + word_car + word_christ + word_christian + word_church + word_come + word_could + word_day + word_development + word_door + word_ekstrohm + word_even + word_eyes + word_face + word_feed + word_first + word_fiscal + word_general + word_get + word_go + word_god + word_good + word_got + word_government + word_great + word_hal + word_helva + word_home + word_house + word_jack + word_jazz + word_know + word_last + word_life + word_like + word_line + word_little + word_long + word_looked + word_made + word_make + word_man + word_many + word_may + word_members + word_men + word_mercer + word_mike + word_mother + word_mr + word_mrs + word_much + word_music + word_must + word_never + word_new + word_number + word_old + word_one + word_people + word_power + word_president + word_program + word_public + word_right + word_said + word_school + word_see + word_shall + word_ship + word_spirit + word_state + word_states + word_still + word_system + word_tax + word_things + word_thought + word_three + word_time + word_two + word_united + word_us + word_use + word_used + word_war + word_water + word_way + word_week + word_well + word_went + word_work + word_world + word_would + word_year + word_years]
             
             text2 = []
             data = []
-
+# =============================================================================
+#       The list header + the rows of data
+# =============================================================================
         textinfo = [['genre', 'genreno', 'filename', 'count', 'tokens', 'richness', 'pleasantness', 'activation', 'imagery', 'dict_count', 'anger', 'anticipation', 'disgust', 'fear', 'joy', 'negative', 'positive', 'sadness', 'surprise', 'trust', 'word_1', 'word_2', 'word_af', 'word_also', 'word_american', 'word_another', 'word_arlene', 'word_around', 'word_back', 'word_bdikkat', 'word_business', 'word_came', 'word_car', 'word_christ', 'word_christian', 'word_church', 'word_come', 'word_could', 'word_day', 'word_development', 'word_door', 'word_ekstrohm', 'word_even', 'word_eyes', 'word_face', 'word_feed', 'word_first', 'word_fiscal', 'word_general', 'word_get', 'word_go', 'word_god', 'word_good', 'word_got', 'word_government',  'word_great',  'word_hal', 'word_helva', 'word_home', 'word_house', 'word_jack', 'word_jazz', 'word_know', 'word_last', 'word_life', 'word_like', 'word_line', 'word_little', 'word_long', 'word_looked', 'word_made', 'word_make', 'word_man','word_many', 'word_may', 'word_members', 'word_men', 'word_mercer', 'word_mike', 'word_mother', 'word_mr', 'word_mrs', 'word_much', 'word_music', 'word_must', 'word_never', 'word_new', 'word_number', 'word_old', 'word_one', 'word_people', 'word_power', 'word_president', 'word_program', 'word_public', 'word_right', 'word_said', 'word_school', 'word_see', 'word_shall', 'word_ship', 'word_spirit', 'word_state', 'word_states', 'word_still', 'word_system', 'word_tax', 'word_things', 'word_thought', 'word_three', 'word_time', 'word_two', 'word_united', 'word_us', 'word_use', 'word_used', 'word_war', 'word_water', 'word_way', 'word_week', 'word_well', 'word_went', 'word_work', 'word_world', 'word_would', 'word_year', 'word_years']] + textinfo
-
+# =============================================================================
+#       Creates a new csv file
+# =============================================================================
         datacsv = open('CollectionData.csv', 'w', newline = '')
-
+# =============================================================================
+#       Adds each row to the csv file
+# =============================================================================
         with datacsv:
             writer = csv.writer(datacsv)
             for row in textinfo:
                 writer.writerow(row)
-
+# =============================================================================
+#       Prints a message when its done and then returns you to the main menu
+# =============================================================================
         print("\n\n-----------------------------------------------------------\n")
         print("\nThe file has been outputted to the folder in which the python file is located. Returning to the main menu in a few seconds.")
         print("\n\n-----------------------------------------------------------\n")
